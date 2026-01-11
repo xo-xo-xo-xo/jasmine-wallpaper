@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Jasmine Wallpaper
+Comment=Wallpaper picker and palette generator
+Exec=jasmine-wallpaper
+Icon=jasmine-wallpaper
+Terminal=false
+Categories=Settings;Utility;
