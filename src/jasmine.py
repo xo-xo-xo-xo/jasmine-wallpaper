@@ -368,11 +368,29 @@ def resolve_binary(name):
         os.path.expanduser("~/.local/bin/%s" % name),
         "/usr/local/bin/%s" % name,
         "/usr/bin/%s" % name,
+        "/bin/%s" % name,
+        "/usr/sbin/%s" % name,
+        "/sbin/%s" % name,
     ]
     for candidate in candidates:
         if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
             return candidate
     return name
+
+
+def _find_asset_dir():
+    # Prefer local repo assets, then fall back to system installs.
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(base_dir, "assets"),
+        os.path.join(os.path.dirname(base_dir), "assets"),
+        "/usr/share/jasmine-wallpaper/assets",
+        "/usr/local/share/jasmine-wallpaper/assets",
+    ]
+    for candidate in candidates:
+        if os.path.exists(os.path.join(candidate, "jasmine.ttf")):
+            return candidate
+    return "/usr/share/jasmine-wallpaper/assets"
 
 
 def supported_image_exts():
@@ -1103,11 +1121,8 @@ class MatugenWindow(Gtk.Window):
         GLib.timeout_add(240, tick)
 
     def _apply_styles(self):
-        font_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "assets",
-            "jasmine.ttf",
-        )
+        asset_dir = _find_asset_dir()
+        font_path = os.path.join(asset_dir, "jasmine.ttf")
         font_url = "file://%s" % font_path
         css = """
         @font-face {
