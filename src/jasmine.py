@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import threading
+import shutil
 import random
 
 import gi
@@ -357,6 +358,23 @@ def build_swww_args(settings):
     if fill_color:
         updates["--fill-color"] = fill_color.lstrip("#")
     return _merge_swww_args(args, updates)
+
+
+def resolve_binary(name):
+    path = shutil.which(name)
+    if path:
+        return path
+    candidates = [
+        os.path.expanduser("~/.local/bin/%s" % name),
+        "/usr/local/bin/%s" % name,
+        "/usr/bin/%s" % name,
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    return name
+
+
 def supported_image_exts():
     exts = set()
     for fmt in GdkPixbuf.Pixbuf.get_formats():
@@ -1086,7 +1104,7 @@ class MatugenWindow(Gtk.Window):
 
     def _apply_styles(self):
         font_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            os.path.dirname(os.path.abspath(__file__)),
             "assets",
             "jasmine.ttf",
         )
@@ -1363,7 +1381,7 @@ class MatugenWindow(Gtk.Window):
         def worker():
             try:
                 args = [
-                    "matugen",
+                    resolve_binary("matugen"),
                     "image",
                     path,
                     "--dry-run",
@@ -1395,7 +1413,7 @@ class MatugenWindow(Gtk.Window):
         if not path:
             return
         args = [
-            "matugen",
+            resolve_binary("matugen"),
             "image",
             path,
             "-t",
