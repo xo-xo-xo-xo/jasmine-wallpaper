@@ -641,6 +641,7 @@ class MatugenWindow(Gtk.Window):
         self._thumb_placeholders = self._create_thumb_placeholders()
 
         self._build_ui()
+        self._apply_styles()
         self._load_images(self.settings["images_folder"])
 
         self.add_events(Gdk.EventMask.KEY_PRESS_MASK)
@@ -1123,7 +1124,7 @@ class MatugenWindow(Gtk.Window):
     def _apply_styles(self):
         asset_dir = _find_asset_dir()
         font_path = os.path.join(asset_dir, "jasmine.ttf")
-        font_url = "file://%s" % font_path
+        font_url = GLib.filename_to_uri(font_path, None)
         css = """
         @font-face {
             font-family: "Jasmine";
@@ -1427,6 +1428,11 @@ class MatugenWindow(Gtk.Window):
         path = getattr(selected[0], "image_path", None)
         if not path:
             return
+        # Ensure matugen has wallpaper settings so it can call swww.
+        try:
+            self._write_swww_settings()
+        except Exception:
+            pass
         args = [
             resolve_binary("matugen"),
             "image",
